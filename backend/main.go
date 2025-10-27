@@ -1,16 +1,16 @@
-package main 
+package main
 
-import(
+import (
 	"fmt"
 	"log"
 	"net/http"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request){
+func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "LogLense Backend is running...")
 }
 
-func main(){
+func main() {
 	http.HandleFunc("/", homeHandler)
 
 	port := ":8080"
