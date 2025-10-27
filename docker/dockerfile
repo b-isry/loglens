@@ -1,0 +1,42 @@
+# file: backend/Dockerfile
+
+# --- Stage 1: Build ---
+# Use the official Go image as a builder.
+# The '1.21-alpine' tag is small and secure.
+FROM golang:1.21-alpine AS builder
+
+# Set the working directory inside the container.
+WORKDIR /app
+
+# Copy the Go module files.
+COPY go.mod go.sum ./
+
+# Download dependencies. This is a separate layer to leverage Docker's caching.
+# It won't re-download unless go.mod or go.sum changes.
+RUN go mod download
+
+# Copy the rest of the source code.
+COPY . .
+
+# Build the Go application.
+# -o /app/server: specifies the output file.
+# CGO_ENABLED=0: creates a statically linked binary (important for small images).
+# -ldflags "-w -s": strips debug information to make the binary smaller.
+RUN CGO_ENABLED=0 go build -o /app/server -ldflags "-w -s" ./...
+
+# --- Stage 2: Final Image ---
+# Start from a scratch image, which is the smallest possible image.
+FROM scratch
+
+# Set the working directory.
+WORKDIR /app
+
+# Copy only the compiled binary from the 'builder' stage.
+# Nothing else is needed (no source code, no Go compiler).
+COPY --from=builder /app/server .
+
+# Expose port 8080 to the outside world.
+EXPOSE 8080
+
+# The command to run when the container starts.
+ENTRYPOINT ["/app/server"]
