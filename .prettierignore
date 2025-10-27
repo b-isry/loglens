@@ -1,0 +1,8 @@
+# Dependency directories
+node_modules/
+
+# Next.js build output
+frontend/.next/
+
+# Go dependencies
+backend/vendor/
